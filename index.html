@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Spinning cat</title>
+  <!--suppress JSUnresolvedLibraryURL -->
+  <script
+          src="https://code.jquery.com/jquery-3.7.1.slim.min.js"
+          integrity="sha256-kmHvs0B+OpCW5GVHUNjv9rOmY0IvSIRcf7zGUDTDQM8="
+          crossorigin="anonymous"></script>
+  <style>
+    @font-face {
+      font-family: prstart;
+      src: url('prstart.ttf');
+    }
+
+    body {
+      font-family: prstart;
+      font-size: 16px;
+      background-color: #14ff06;
+      margin-top: 30px;
+    }
+
+    #main {
+      margin: 0 auto;
+      width: 512px;
+      color: white;
+    }
+
+    #help {
+      border-top: 4px solid white;
+      margin-top: 10px;
+      padding-top: 7px;
+    }
+
+    #help img {
+      vertical-align: middle;
+    }
+
+    #help td {
+      padding-left: 1em;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+    }
+
+    #mobile-controls {
+      display: none;
+      margin-top: 20px;
+      justify-content: center;
+    }
+
+    #help {
+      display: none;
+    }
+
+    .control-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 70px;
+      height: 70px;
+
+      padding: 16px 16px;
+      margin: 0;
+      font-size: 24px;
+      font-weight: bold;
+
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f0f0;
+      text-align: center;
+      border: none;
+      border-radius: 99px;
+      background: linear-gradient(to bottom, rgba(255, 0, 0, 0.8), rgba(140, 17, 32, 0.8));;
+      color: white;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+
+    .control-button:active {
+      transform: scale(0.96);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .directional {
+      display: grid;
+      grid-template-columns: repeat(3, 70px);
+      grid-template-rows: repeat(3, 70px);
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 25px;
+    }
+
+    .directional div .control-button {
+      padding: 25px;
+      border-radius: 50px;
+    }
+
+    .actions .control-button {
+      margin-top: 10px;
+      margin-left: 90px;
+      margin-bottom: 40px;
+      padding: 30px;
+      border-radius: 60px;
+    }
+  </style>
+</head>
+<body>
+  <div id="main">
+    <div id="help">
+      <p>CONTROLS:</p>
+      <table>
+        <tr>
+          <td><img src="images/Nintendo-Dpad-Neutral.png" alt="" /></td>
+          <td>ARROWS</td>
+        </tr>
+        <tr>
+          <td><img src="images/Nintendo-Button-A.png" alt="" />,<img src="images/Nintendo-Button-B.png" alt="" /></td>
+          <td>SPACE</td>
+        </tr>
+        <tr>
+          <td><img src="images/Nintendo-Button-Start.png" alt="" /></td>
+          <td>ENTER</td>
+        </tr>
+      </table>
+    </div>
+    <div id="mobile-controls">
+      <div class="directional">
+        <div></div>
+        <div>
+          <button class="control-button" onmouseup="simulateKey('ArrowUp', 'keyup')" onmousedown="simulateKey('ArrowUp', 'keydown')">⬆</button>
+        </div>
+        <div></div>
+
+        <div>
+          <button class="control-button" onmouseup="simulateKey('ArrowLeft', 'keyup')" onmousedown="simulateKey('ArrowLeft', 'keydown')">⬅</button>
+        </div>
+        <div></div>
+        <div>
+          <button class="control-button" onmouseup="simulateKey('ArrowRight', 'keyup')" onmousedown="simulateKey('ArrowRight', 'keydown')">➡</button>
+        </div>
+
+        <div></div>
+        <div>
+          <button class="control-button" onmouseup="simulateKey('ArrowDown', 'keyup')" onmousedown="simulateKey('ArrowDown', 'keydown')">⬇</button>
+        </div>
+        <div></div>
+      </div>
+
+      <div class="actions">
+        <button class="control-button" onmouseup="simulateKey(' ', 'keyup')" onmousedown="simulateKey(' ', 'keydown')">🔫</button>
+        <button class="control-button" onmouseup="simulateKey('Enter', 'keyup')" onmousedown="simulateKey('Enter', 'keydown')">
+          <img src="images/Nintendo-Button-Start.png" alt="" />
+        </button>
+      </div>
+    </div>
+  </div>
+</body>
+<link>
+<script type="text/javascript" src="logic.js"></script>
+
+<script type="text/javascript">
+  $(function () {
+    const fps = 50;
+
+    const canvasId = 'canvas';
+    const ctx = createCanvasContext();
+    ctx.font = "16px prstart"
+
+    const eventManager = new EventManager();
+    const keyboard = new Keyboard(eventManager);
+    const sceneManager = new SceneManager(eventManager);
+    sceneManager.toLoadingScene();
+
+    setInterval(gameLoop, 1000 / fps);
+
+    function gameLoop() {
+      keyboard.fireEvents();
+      sceneManager.update();
+      sceneManager.draw(ctx);
+    }
+
+    function createCanvasContext() {
+      $('<canvas id="' + canvasId + '" width="' + Globals.CANVAS_WIDTH + '" height="' + Globals.CANVAS_HEIGHT + '"></canvas>').prependTo('#main');
+      const canvas = document.getElementById(canvasId);
+      return canvas.getContext('2d');
+    }
+  });
+
+  function isMobileDevice() {
+    return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  }
+
+  if (isMobileDevice()) {
+    document.getElementById('mobile-controls').style.display = 'flex';
+  } else {
+    document.getElementById('help').style.display = 'block';
+  }
+
+  function simulateKey(key, event) {
+    const keyCodeMap = {
+      ' ': 32,
+      'Enter': 13,
+      'ArrowUp': 38,
+      'ArrowDown': 40,
+      'ArrowLeft': 37,
+      'ArrowRight': 39
+    };
+
+    const eventOptions = {
+      key: key,
+      code: key,
+      keyCode: keyCodeMap[key],
+      which: keyCodeMap[key],
+      bubbles: true
+    };
+
+    const downEvent = new KeyboardEvent(event, eventOptions);
+
+    document.dispatchEvent(downEvent);
+  }
+</script>
+</html>
